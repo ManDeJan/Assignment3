@@ -10,6 +10,8 @@ import CSharpGram
 import CSharpAlgebra
 import SSM
 import CSharpCode
+import Prelude hiding ((<*), (<$), (*>))
+
 
 start :: Parser s a -> [s] -> a
 start p = fst . head . filter (null . snd) . parse p

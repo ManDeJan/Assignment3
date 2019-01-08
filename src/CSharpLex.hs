@@ -3,6 +3,7 @@ module CSharpLex where
 import Data.Char
 import Control.Monad
 import ParseLib.Abstract
+import Prelude hiding ((<*), (<$), (*>))
 
 
 data Token = POpen    | PClose      -- parentheses     ()

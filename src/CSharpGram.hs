@@ -2,6 +2,7 @@ module CSharpGram where
 
 import ParseLib.Abstract hiding (braced, bracketed, parenthesised)
 import CSharpLex
+import Prelude hiding ((<*), (<$), (*>))
 
 
 data Class = Class Token [Member]
