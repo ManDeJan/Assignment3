@@ -53,7 +53,8 @@ fStatBlock :: [Code] -> Code
 fStatBlock = concat
 
 fExprCon :: Token -> ValueOrAddress -> Code
-fExprCon (ConstInt n) va = [LDC n]
+fExprCon (ConstInt  n) va     = [LDC n]
+fExprCon (ConstBool b) va     = [LDC $ fromEnum b]
 
 fExprVar :: Token -> ValueOrAddress -> Code
 fExprVar (LowerId x) va = let loc = 37 in case va of

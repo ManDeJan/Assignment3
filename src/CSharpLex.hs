@@ -64,6 +64,13 @@ lexLowerId = (\x xs -> LowerId (x:xs)) <$> satisfy isLower <*> greedy (satisfy i
 lexUpperId :: Parser Char Token
 lexUpperId = (\x xs -> UpperId (x:xs)) <$> satisfy isUpper <*> greedy (satisfy isAlphaNum)
 
+lexConstBool :: Parser Char Token
+lexConstBool = ConstBool True  <$ token "true" <|>
+               ConstBool False <$ token "false"
+
+lexConstChar :: Parser Char Token
+lexConstChar = (ConstInt . ord) <$> pack (satisfy (=='\'')) anySymbol (satisfy (=='\'')) 
+
 lexConstInt :: Parser Char Token
 lexConstInt = (ConstInt . read) <$> greedy1 (satisfy isDigit)
 
@@ -87,6 +94,8 @@ lexToken = greedyChoice
              , lexEnum StdType stdTypes
              , lexEnum Operator operators
              , lexConstInt
+             , lexConstBool
+             , lexConstChar
              , lexLowerId
              , lexUpperId
              ]
