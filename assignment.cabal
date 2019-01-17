@@ -1,0 +1,15 @@
+name:                Assignment3
+version:             0.1.0.0
+author:              Jan & Quinten
+build-type:          Simple
+cabal-version:       >=1.10
+
+executable Assignment3
+  main-is:             Main.hs
+  build-depends:       base >= 4 && < 5,
+                       uu-tc,
+                       containers,
+                       filepath
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+  ghc-options:         -O3
