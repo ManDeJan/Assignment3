@@ -41,43 +41,28 @@ braced        p = pack (symbol COpen) p (symbol CClose)
 
 
 pExpr' :: Parser Token Expr
-pExpr' = chainl pExpr1 (ExprOper <$> sOperatorLevel1) 
+pExpr' = chainl pExprMultis (ExprOper <$> sOperatorAddis) 
 
-pExpr1 :: Parser Token Expr
-pExpr1 = chainl pExpr2 (ExprOper <$> sOperatorLevel2)
+pExprMultis :: Parser Token Expr
+pExprMultis = chainl pExprComparisonLessAndGreaterThan (ExprOper <$> sOperatorMultis)
 
-pExpr2 :: Parser Token Expr
-pExpr2 = chainl pExpr3 (ExprOper <$> sOperatorLevel3)
+pExprComparisonLessAndGreaterThan :: Parser Token Expr
+pExprComparisonLessAndGreaterThan = chainl pExprComparisonEqualOrNotEqual (ExprOper <$> sOperatorComparisonLessAndGreaterThan)
 
-pExpr3 :: Parser Token Expr
-pExpr3 = chainl pExpr4 (ExprOper <$> sOperatorLevel4) 
+pExprComparisonEqualOrNotEqual :: Parser Token Expr
+pExprComparisonEqualOrNotEqual = chainl pExprBitwiseXOR (ExprOper <$> sOperatorLevelComparisonEqualAndNotEqual)
 
-pExpr4 :: Parser Token Expr
-pExpr4 = chainl pExpr5 (ExprOper <$> sOperatorLevel5)
+pExprBitwiseXOR :: Parser Token Expr
+pExprBitwiseXOR = chainl pExprBitwiseAnd (ExprOper <$> sOperatorBitwiseXOR ) 
 
-pExpr5 :: Parser Token Expr
-pExpr5 = chainl pExpr6 (ExprOper <$> sOperatorLevel6)
+pExprBitwiseAnd :: Parser Token Expr
+pExprBitwiseAnd = chainl pExprBitwiseOr (ExprOper <$> sOperatorBitwiseAnd) 
 
-pExpr6 :: Parser Token Expr
-pExpr6 = chainl pExpr7 (ExprOper <$> sOperatorLevel7) 
+pExprBitwiseOr :: Parser Token Expr
+pExprBitwiseOr = chainl pExprAssignment (ExprOper <$> sOperatorBitwiseOr) 
 
-pExpr7 :: Parser Token Expr
-pExpr7 = chainl pExpr8 (ExprOper <$> sOperatorLevel8) 
-
-pExpr8 :: Parser Token Expr
-pExpr8 = chainl pExpr9 (ExprOper <$> sOperatorLevel9) 
-
-pExpr9 :: Parser Token Expr
-pExpr9 = chainl pExpr10 (ExprOper <$> sOperatorLevel10)
-
-pExpr10 :: Parser Token Expr
-pExpr10 = chainl pExpr11 (ExprOper <$> sOperatorLevel11) 
-
-pExpr11 :: Parser Token Expr
-pExpr11 = chainl pExpr12 (ExprOper <$> sOperatorLevel2) 
-
-pExpr12 :: Parser Token Expr
-pExpr12 = chainl pExprSimple (ExprOper <$> sOperatorLevel13) 
+pExprAssignment :: Parser Token Expr
+pExprAssignment = chainr pExprSimple (ExprOper <$> sOperatorAssignment) 
      
 
 pExprSimple :: Parser Token Expr
