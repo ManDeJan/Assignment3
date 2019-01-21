@@ -39,27 +39,51 @@ parenthesised p = pack (symbol POpen) p (symbol PClose)
 bracketed     p = pack (symbol SOpen) p (symbol SClose)
 braced        p = pack (symbol COpen) p (symbol CClose)
 
-type Op a = (Char, a -> a -> a)
+
+pExpr' :: Parser Token Expr
+pExpr' = chainl pExpr1 (ExprOper <$> sOperatorLevel1) 
+
+pExpr1 :: Parser Token Expr
+pExpr1 = chainl pExpr2 (ExprOper <$> sOperatorLevel2)
+
+pExpr2 :: Parser Token Expr
+pExpr2 = chainl pExpr3 (ExprOper <$> sOperatorLevel3)
+
+pExpr3 :: Parser Token Expr
+pExpr3 = chainl pExpr4 (ExprOper <$> sOperatorLevel4) 
+
+pExpr4 :: Parser Token Expr
+pExpr4 = chainl pExpr5 (ExprOper <$> sOperatorLevel5)
+
+pExpr5 :: Parser Token Expr
+pExpr5 = chainl pExpr6 (ExprOper <$> sOperatorLevel6)
+
+pExpr6 :: Parser Token Expr
+pExpr6 = chainl pExpr7 (ExprOper <$> sOperatorLevel7) 
+
+pExpr7 :: Parser Token Expr
+pExpr7 = chainl pExpr8 (ExprOper <$> sOperatorLevel8) 
+
+pExpr8 :: Parser Token Expr
+pExpr8 = chainl pExpr9 (ExprOper <$> sOperatorLevel9) 
+
+pExpr9 :: Parser Token Expr
+pExpr9 = chainl pExpr10 (ExprOper <$> sOperatorLevel10)
+
+pExpr10 :: Parser Token Expr
+pExpr10 = chainl pExpr11 (ExprOper <$> sOperatorLevel11) 
+
+pExpr11 :: Parser Token Expr
+pExpr11 = chainl pExpr12 (ExprOper <$> sOperatorLevel2) 
+
+pExpr12 :: Parser Token Expr
+pExpr12 = chainl pExprSimple (ExprOper <$> sOperatorLevel13) 
+     
 
 pExprSimple :: Parser Token Expr
 pExprSimple =  ExprConst <$> sConst
            <|> ExprVar   <$> sLowerId
-           <|> parenthesised pExpr
-
-gen :: [Op a] -> Parser Token a -> Parser Token a
-gen ops p = chainl p (choice (map f ops))
-  where f (s,c) = const c <$> symbol s
-
-expr' :: Parser Token Expr
-expr' = foldr gen pExprSimple [addis, multis]
-
-multis = [(ExprOper, (Operator "*")), (ExprOper, (Operator "/"))]
-addis  = [('+', (Operator "+")), ('-', (Operator "-"))]
--- pagina 62 van het diktaat
-
-pExpr :: Parser Token Expr
-pExpr = chainr pExprSimple (ExprOper <$> sOperator)
-
+           <|> parenthesised pExpr'
 
 pMember :: Parser Token Member
 pMember =  MemberD <$> pDeclSemi
@@ -70,10 +94,10 @@ pStatDecl =  pStat
          <|> StatDecl <$> pDeclSemi
 
 pStat :: Parser Token Stat
-pStat =  StatExpr <$> pExpr <*  sSemi
-     <|> StatIf     <$ symbol KeyIf     <*> parenthesised pExpr <*> pStat <*> optionalElse
-     <|> StatWhile  <$ symbol KeyWhile  <*> parenthesised pExpr <*> pStat
-     <|> StatReturn <$ symbol KeyReturn <*> pExpr               <*  sSemi
+pStat =  StatExpr <$> pExpr' <*  sSemi
+     <|> StatIf     <$ symbol KeyIf     <*> parenthesised pExpr' <*> pStat <*> optionalElse
+     <|> StatWhile  <$ symbol KeyWhile  <*> parenthesised pExpr' <*> pStat
+     <|> StatReturn <$ symbol KeyReturn <*> pExpr'              <*  sSemi
      <|> pBlock
      where optionalElse = option ((\_ x -> x) <$> symbol KeyElse <*> pStat) (StatBlock [])
 
