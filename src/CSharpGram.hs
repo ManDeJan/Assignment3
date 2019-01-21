@@ -39,27 +39,20 @@ parenthesised p = pack (symbol POpen) p (symbol PClose)
 bracketed     p = pack (symbol SOpen) p (symbol SClose)
 braced        p = pack (symbol COpen) p (symbol CClose)
 
-type Op a = (Char, a -> a -> a)
+
+
+-- pagina 62 van het diktaat
+
+pExpr' :: Parser Token Expr
+pExpr' = chainl other (ExprOper <$> sOperatorLevel3) 
+
+other :: Parser Token Expr
+other = chainl pExprSimple (ExprOper <$> sOperator)
 
 pExprSimple :: Parser Token Expr
 pExprSimple =  ExprConst <$> sConst
            <|> ExprVar   <$> sLowerId
-           <|> parenthesised pExpr
-
-gen :: [Op a] -> Parser Token a -> Parser Token a
-gen ops p = chainl p (choice (map f ops))
-  where f (s,c) = const c <$> symbol s
-
-expr' :: Parser Token Expr
-expr' = foldr gen pExprSimple [addis, multis]
-
-multis = [(ExprOper, (Operator "*")), (ExprOper, (Operator "/"))]
-addis  = [('+', (Operator "+")), ('-', (Operator "-"))]
--- pagina 62 van het diktaat
-
-pExpr :: Parser Token Expr
-pExpr = chainr pExprSimple (ExprOper <$> sOperator)
-
+           <|> parenthesised pExpr'
 
 pMember :: Parser Token Member
 pMember =  MemberD <$> pDeclSemi
@@ -70,10 +63,10 @@ pStatDecl =  pStat
          <|> StatDecl <$> pDeclSemi
 
 pStat :: Parser Token Stat
-pStat =  StatExpr <$> pExpr <*  sSemi
-     <|> StatIf     <$ symbol KeyIf     <*> parenthesised pExpr <*> pStat <*> optionalElse
-     <|> StatWhile  <$ symbol KeyWhile  <*> parenthesised pExpr <*> pStat
-     <|> StatReturn <$ symbol KeyReturn <*> pExpr               <*  sSemi
+pStat =  StatExpr <$> pExpr' <*  sSemi
+     <|> StatIf     <$ symbol KeyIf     <*> parenthesised pExpr' <*> pStat <*> optionalElse
+     <|> StatWhile  <$ symbol KeyWhile  <*> parenthesised pExpr' <*> pStat
+     <|> StatReturn <$ symbol KeyReturn <*> pExpr'              <*  sSemi
      <|> pBlock
      where optionalElse = option ((\_ x -> x) <$> symbol KeyElse <*> pStat) (StatBlock [])
 

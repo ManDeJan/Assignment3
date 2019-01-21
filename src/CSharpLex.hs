@@ -130,6 +130,19 @@ sOperator = satisfy isOperator
     where isOperator (Operator _) = True
           isOperator _            = False
 
+sOperatorLevel4 :: Parser Token Token
+sOperatorLevel4 = satisfy isOperator
+  where isOperator (Operator "+") = True
+        isOperator (Operator "-") = True
+        isOperator _              = False
+
+sOperatorLevel3 :: Parser Token Token
+sOperatorLevel3 = satisfy isOperator
+  where isOperator (Operator "*") = True
+        isOperator (Operator "/") = True
+        isOperator _              = False
+
+--According to https://en.wikipedia.org/wiki/Order_of_operations
 
 sSemi :: Parser Token Token
 sSemi =  symbol Semicolon

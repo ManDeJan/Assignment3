@@ -2,11 +2,10 @@ class Hello
 {   
     void main()
     {
-        bool f;
-        f = true;
-        f = false;
-        char rotterdammert;
-        rotterdammert = 'f';
+        int b;
+        b = 5 + 5 * 3;
+        int c;
+        c = 5 * 3 + 5;
     }
     
 }
