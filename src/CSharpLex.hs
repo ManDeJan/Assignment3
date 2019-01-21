@@ -125,21 +125,76 @@ sConst  = satisfy isConst
           isConst (ConstBool _) = True
           isConst _             = False
 
-sOperator :: Parser Token Token
-sOperator = satisfy isOperator
-    where isOperator (Operator _) = True
-          isOperator _            = False
+sOperatorSpecified :: String -> Parser Token Token
+sOperatorSpecified s = satisfy isOperator
+  where isOperator (Operator s) = True
+        isOperator _            = False
 
-sOperatorLevel4 :: Parser Token Token
-sOperatorLevel4 = satisfy isOperator
+sOperatorLevel1 :: Parser Token Token
+sOperatorLevel1 = satisfy isOperator
   where isOperator (Operator "+") = True
         isOperator (Operator "-") = True
         isOperator _              = False
 
-sOperatorLevel3 :: Parser Token Token
-sOperatorLevel3 = satisfy isOperator
+sOperatorLevel2 :: Parser Token Token
+sOperatorLevel2 = satisfy isOperator
   where isOperator (Operator "*") = True
         isOperator (Operator "/") = True
+        isOperator _              = False
+
+sOperatorLevel3 :: Parser Token Token
+sOperatorLevel3 = satisfy isOperator
+  where isOperator (Operator "%") = True
+        isOperator _              = False
+
+sOperatorLevel4 :: Parser Token Token
+sOperatorLevel4 = satisfy isOperator
+  where isOperator (Operator "&&") = True
+        isOperator _               = False
+
+sOperatorLevel5 :: Parser Token Token
+sOperatorLevel5 = satisfy isOperator
+  where isOperator (Operator "||") = True
+        isOperator _               = False
+
+sOperatorLevel6 :: Parser Token Token
+sOperatorLevel6 = satisfy isOperator
+  where isOperator (Operator "^") = True
+        isOperator _              = False
+
+sOperatorLevel7 :: Parser Token Token
+sOperatorLevel7 = satisfy isOperator
+  where isOperator (Operator "<=") = True
+        isOperator _               = False
+
+sOperatorLevel8 :: Parser Token Token
+sOperatorLevel8 = satisfy isOperator
+  where isOperator (Operator "<") = True
+        isOperator _              = False
+
+sOperatorLevel9 :: Parser Token Token
+sOperatorLevel9 = satisfy isOperator
+  where isOperator (Operator ">=") = True
+        isOperator _               = False
+
+sOperatorLevel10 :: Parser Token Token
+sOperatorLevel10 = satisfy isOperator
+  where isOperator (Operator ">") = True
+        isOperator _              = False
+
+sOperatorLevel11 :: Parser Token Token
+sOperatorLevel11 = satisfy isOperator
+  where isOperator (Operator "==") = True
+        isOperator _               = False
+
+sOperatorLevel12 :: Parser Token Token
+sOperatorLevel12 = satisfy isOperator
+  where isOperator (Operator "!=") = True
+        isOperator _               = False
+
+sOperatorLevel13 :: Parser Token Token
+sOperatorLevel13 = satisfy isOperator
+  where isOperator (Operator "=") = True
         isOperator _              = False
 
 --According to https://en.wikipedia.org/wiki/Order_of_operations
