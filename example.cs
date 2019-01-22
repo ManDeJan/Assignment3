@@ -2,10 +2,27 @@ class Hello
 {   
     void main()
     {
-        int b;
-        b = 5 + 5 * 3;
-        int c;
-        c = 5 * 3 + 5;
+        int i;
+        i = 0;
+        while (false) {
+            i = i + 5;
+        }
     }
-    
+
+
+    void test1() {
+        int i;
+        for (i = 1; i < 5; i + 1) {
+            i = i * 2;
+        }
+    }
+
+    void test2() {
+        int i;
+        i = 1;
+        while (i < 5) {
+            i = i * 2;
+            i + 1;
+        }
+    }
 }
