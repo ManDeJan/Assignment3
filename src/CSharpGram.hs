@@ -39,27 +39,36 @@ parenthesised p = pack (symbol POpen) p (symbol PClose)
 bracketed     p = pack (symbol SOpen) p (symbol SClose)
 braced        p = pack (symbol COpen) p (symbol CClose)
 
-type Op a = (Char, a -> a -> a)
+
+pExpr' :: Parser Token Expr
+pExpr' = chainl pExprMultis (ExprOper <$> sOperatorAddis) 
+
+pExprMultis :: Parser Token Expr
+pExprMultis = chainl pExprComparisonLessAndGreaterThan (ExprOper <$> sOperatorMultis)
+
+pExprComparisonLessAndGreaterThan :: Parser Token Expr
+pExprComparisonLessAndGreaterThan = chainl pExprComparisonEqualOrNotEqual (ExprOper <$> sOperatorComparisonLessAndGreaterThan)
+
+pExprComparisonEqualOrNotEqual :: Parser Token Expr
+pExprComparisonEqualOrNotEqual = chainl pExprBitwiseXOR (ExprOper <$> sOperatorLevelComparisonEqualAndNotEqual)
+
+pExprBitwiseXOR :: Parser Token Expr
+pExprBitwiseXOR = chainl pExprBitwiseAnd (ExprOper <$> sOperatorBitwiseXOR ) 
+
+pExprBitwiseAnd :: Parser Token Expr
+pExprBitwiseAnd = chainl pExprBitwiseOr (ExprOper <$> sOperatorBitwiseAnd) 
+
+pExprBitwiseOr :: Parser Token Expr
+pExprBitwiseOr = chainl pExprAssignment (ExprOper <$> sOperatorBitwiseOr) 
+
+pExprAssignment :: Parser Token Expr
+pExprAssignment = chainr pExprSimple (ExprOper <$> sOperatorAssignment) 
+     
 
 pExprSimple :: Parser Token Expr
 pExprSimple =  ExprConst <$> sConst
            <|> ExprVar   <$> sLowerId
-           <|> parenthesised pExpr
-
-gen :: [Op a] -> Parser Token a -> Parser Token a
-gen ops p = chainl p (choice (map f ops))
-  where f (s,c) = const c <$> symbol s
-
-expr' :: Parser Token Expr
-expr' = foldr gen pExprSimple [addis, multis]
-
-multis = [(ExprOper, (Operator "*")), (ExprOper, (Operator "/"))]
-addis  = [('+', (Operator "+")), ('-', (Operator "-"))]
--- pagina 62 van het diktaat
-
-pExpr :: Parser Token Expr
-pExpr = chainr pExprSimple (ExprOper <$> sOperator)
-
+           <|> parenthesised pExpr'
 
 pMember :: Parser Token Member
 pMember =  MemberD <$> pDeclSemi
@@ -70,10 +79,10 @@ pStatDecl =  pStat
          <|> StatDecl <$> pDeclSemi
 
 pStat :: Parser Token Stat
-pStat =  StatExpr <$> pExpr <*  sSemi
-     <|> StatIf     <$ symbol KeyIf     <*> parenthesised pExpr <*> pStat <*> optionalElse
-     <|> StatWhile  <$ symbol KeyWhile  <*> parenthesised pExpr <*> pStat
-     <|> StatReturn <$ symbol KeyReturn <*> pExpr               <*  sSemi
+pStat =  StatExpr <$> pExpr' <*  sSemi
+     <|> StatIf     <$ symbol KeyIf     <*> parenthesised pExpr' <*> pStat <*> optionalElse
+     <|> StatWhile  <$ symbol KeyWhile  <*> parenthesised pExpr' <*> pStat
+     <|> StatReturn <$ symbol KeyReturn <*> pExpr'              <*  sSemi
      <|> pBlock
      where optionalElse = option ((\_ x -> x) <$> symbol KeyElse <*> pStat) (StatBlock [])
 

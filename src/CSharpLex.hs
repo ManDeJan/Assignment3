@@ -128,11 +128,54 @@ sConst  = satisfy isConst
           isConst (ConstBool _) = True
           isConst _             = False
 
-sOperator :: Parser Token Token
-sOperator = satisfy isOperator
-    where isOperator (Operator _) = True
-          isOperator _            = False
+sOperatorAddis :: Parser Token Token
+sOperatorAddis = satisfy isOperator
+  where isOperator (Operator "+") = True
+        isOperator (Operator "-") = True
+        isOperator _              = False
 
+sOperatorMultis :: Parser Token Token
+sOperatorMultis = satisfy isOperator
+  where isOperator (Operator "*") = True
+        isOperator (Operator "/") = True
+        isOperator (Operator "%") = True
+        isOperator _              = False
+
+sOperatorComparisonLessAndGreaterThan :: Parser Token Token
+sOperatorComparisonLessAndGreaterThan = satisfy isOperator
+  where isOperator (Operator "<=") = True
+        isOperator (Operator "<") = True
+        isOperator (Operator ">=") = True
+        isOperator (Operator ">") = True
+        isOperator _              = False
+
+sOperatorLevelComparisonEqualAndNotEqual :: Parser Token Token
+sOperatorLevelComparisonEqualAndNotEqual = satisfy isOperator
+  where isOperator (Operator "!=") = True
+        isOperator (Operator "==") = True
+        isOperator _               = False
+
+sOperatorBitwiseXOR :: Parser Token Token
+sOperatorBitwiseXOR = satisfy isOperator
+  where isOperator (Operator "^") = True
+        isOperator _              = False
+
+sOperatorBitwiseAnd :: Parser Token Token
+sOperatorBitwiseAnd = satisfy isOperator
+  where isOperator (Operator "&&") = True
+        isOperator _               = False
+
+sOperatorBitwiseOr :: Parser Token Token
+sOperatorBitwiseOr = satisfy isOperator
+  where isOperator (Operator "||") = True
+        isOperator _               = False
+
+sOperatorAssignment :: Parser Token Token
+sOperatorAssignment = satisfy isOperator
+  where isOperator (Operator "=") = True
+        isOperator _              = False
+
+--According to https://en.wikipedia.org/wiki/Order_of_operations
 
 sSemi :: Parser Token Token
 sSemi =  symbol Semicolon
