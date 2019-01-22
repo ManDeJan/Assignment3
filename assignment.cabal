@@ -6,6 +6,12 @@ cabal-version:       >=1.10
 
 executable Assignment3
   main-is:             Main.hs
+  other-modules:       CSharpAlgebra,
+                       CSharpCode,
+                       CSharpGram,
+                       CSharpLex,
+                       SSM
+
   build-depends:       base >= 4 && < 5,
                        uu-tc,
                        containers,
