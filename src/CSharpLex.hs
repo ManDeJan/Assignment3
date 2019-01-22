@@ -104,7 +104,7 @@ lexToken = greedyChoice
              ]
 
 lexicalScanner :: Parser Char [Token]
-lexicalScanner = lexWhiteSpace *> greedy (lexToken <* lexWhiteSpace <* optional (lexComment <* lexWhiteSpace)) <* eof
+lexicalScanner = lexWhiteSpace *> greedy (lexToken <* lexWhiteSpace <* many (lexComment <* lexWhiteSpace)) <* eof
 
 
 sStdType :: Parser Token Token
