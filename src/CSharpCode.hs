@@ -11,7 +11,7 @@ import SSM
 data ValueOrAddress = Value | Address
     deriving Show
 
-codeAlgebra :: CSharpAlgebra Code Code Code (ValueOrAddress -> Code)
+codeAlgebra :: CSharpAlgebra Code (Env -> (Env, Code)) (Env -> (Env, Code)) (Env -> ValueOrAddress -> Code)
 codeAlgebra =
     ( fClas
     , (fMembDecl, fMembMeth)
@@ -19,49 +19,49 @@ codeAlgebra =
     , (fExprCon, fExprVar, fExprOp)
     )
 
-fClas :: Token -> [Code] -> Code
+fClas :: Token -> [Env -> (Env, Code)] -> Code
 fClas c ms = [Bsr "main", HALT] ++ concat ms
 
-fMembDecl :: Decl -> Code
+fMembDecl :: Decl -> (Env -> (Env, Code))
 fMembDecl d = []
 
-fMembMeth :: Type -> Token -> [Decl] -> Code -> Code
+fMembMeth :: Type -> Token -> [Decl] -> (Env -> (Env, Code)) -> (Env -> (Env, Code))
 fMembMeth t (LowerId x) ps s = [LABEL x] ++ s ++ [RET]
 
-fStatDecl :: Decl -> Code
+fStatDecl :: Decl -> (Env -> (Env, Code))
 fStatDecl d = []
 
-fStatExpr :: (ValueOrAddress -> Code) -> Code
+fStatExpr :: (Env -> ValueOrAddress -> Code) -> (Env -> (Env, Code))
 fStatExpr e = e Value ++ [pop]
 
-fStatIf :: (ValueOrAddress -> Code) -> Code -> Code -> Code
+fStatIf :: (Env -> ValueOrAddress -> Code) -> (Env -> (Env, Code)) -> (Env -> (Env, Code)) -> (Env -> (Env, Code))
 fStatIf e s1 s2 = c ++ [BRF (n1 + 2)] ++ s1 ++ [BRA n2] ++ s2
     where
         c        = e Value
         (n1, n2) = (codeSize s1, codeSize s2)
 
-fStatWhile :: (ValueOrAddress -> Code) -> Code -> Code
+fStatWhile :: (Env -> ValueOrAddress -> Code) -> (Env -> (Env, Code)) -> (Env -> (Env, Code))
 fStatWhile e s1 = [BRA n] ++ s1 ++ c ++ [BRT (-(n + k + 2))]
     where
         c = e Value
         (n, k) = (codeSize s1, codeSize c)
 
-fStatReturn :: (ValueOrAddress -> Code) -> Code
+fStatReturn :: (Env -> ValueOrAddress -> Code) -> (Env -> (Env, Code))
 fStatReturn e = e Value ++ [pop] ++ [RET]
 
-fStatBlock :: [Code] -> Code
+fStatBlock :: [Env -> (Env, Code)] -> (Env -> (Env, Code))
 fStatBlock = concat
 
-fExprCon :: Token -> ValueOrAddress -> Code
+fExprCon :: Token -> (Env -> ValueOrAddress -> Code)
 fExprCon (ConstInt  n) va     = [LDC n]
 fExprCon (ConstBool b) va     = [LDC $ fromEnum b]
 
-fExprVar :: Token -> ValueOrAddress -> Code
+fExprVar :: Token -> (Env -> ValueOrAddress -> Code)
 fExprVar (LowerId x) va = let loc = 37 in case va of
                                               Value    ->  [LDL  loc]
                                               Address  ->  [LDLA loc]
 
-fExprOp :: Token -> (ValueOrAddress -> Code) -> (ValueOrAddress -> Code) -> ValueOrAddress -> Code
+fExprOp :: Token -> (Env -> ValueOrAddress -> Code) -> (Env -> ValueOrAddress -> Code) -> ValueOrAddress -> Code
 fExprOp (Operator "=") e1 e2 va = e2 Value ++ [LDS 0] ++ e1 Address ++ [STA 0]
 fExprOp (Operator op)  e1 e2 va = e1 Value ++ e2 Value ++ [opCodes ! op]
 
