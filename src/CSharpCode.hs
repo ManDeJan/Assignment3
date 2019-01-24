@@ -61,9 +61,9 @@ fExprVar (LowerId x) va = let loc = 37 in case va of
                                               Value    ->  [LDL  loc]
                                               Address  ->  [LDLA loc]
 
-fExprOp :: Token -> (Env -> ValueOrAddress -> Code) -> (Env -> ValueOrAddress -> Code) -> ValueOrAddress -> Code
-fExprOp (Operator "=") e1 e2 va = e2 Value ++ [LDS 0] ++ e1 Address ++ [STA 0]
-fExprOp (Operator op)  e1 e2 va = e1 Value ++ e2 Value ++ [opCodes ! op]
+fExprOp :: Token -> (Env -> ValueOrAddress -> Code) -> (Env -> ValueOrAddress -> Code) -> (Env -> ValueOrAddress -> Code)
+fExprOp (Operator "=") e1 e2 env va = e2 Value ++ [LDS 0] ++ e1 Address ++ [STA 0]
+fExprOp (Operator op)  e1 e2 env va = e1 Value ++ e2 Value ++ [opCodes ! op]
 
 
 opCodes :: Map String Instr
