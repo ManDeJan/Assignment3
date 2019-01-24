@@ -57,17 +57,17 @@ fStatBlock :: [Env -> (Env, Code)] -> (Env -> (Env, Code))
 fStatBlock = concat
 
 fExprCon :: Token -> (Env -> ValueOrAddress -> Code)
-fExprCon (ConstInt  n) va     = [LDC n]
-fExprCon (ConstBool b) va     = [LDC $ fromEnum b]
+fExprCon (ConstInt  n) env va     = [LDC n]
+fExprCon (ConstBool b) env va     = [LDC $ fromEnum b]
 
 fExprVar :: Token -> (Env -> ValueOrAddress -> Code)
-fExprVar (LowerId x) va = let loc = 37 in case va of
+fExprVar (LowerId x) env va = let loc = 37 in case va of
                                               Value    ->  [LDL  loc]
                                               Address  ->  [LDLA loc]
 
 fExprOp :: Token -> (Env -> ValueOrAddress -> Code) -> (Env -> ValueOrAddress -> Code) -> (Env -> ValueOrAddress -> Code)
-fExprOp (Operator "=") e1 e2 env va = e2 Value ++ [LDS 0] ++ e1 Address ++ [STA 0]
-fExprOp (Operator op)  e1 e2 env va = e1 Value ++ e2 Value ++ [opCodes ! op]
+fExprOp (Operator "=") e1 e2 env va = e2 env Value ++ [LDS 0] ++ e1 env Address ++ [STA 0]
+fExprOp (Operator op)  e1 e2 env va = e1 env Value ++ e2 env Value ++ [opCodes ! op]
 
 
 opCodes :: Map String Instr
