@@ -20,7 +20,11 @@ codeAlgebra =
     )
 
 fClas :: Token -> [Env -> (Env, Code)] -> Code
-fClas c ms = [Bsr "main", HALT] ++ snd $ foldl (\(env, cod) mem -> (\(env', cod') -> (env', cod ++ cod')) (mem env)) (([],[],[]), []) ms
+fClas c ms = [Bsr "main", HALT] ++ snd $ foldl (\(env, cod) mem -> -- What is love
+                                                   (\(env', cod') ->    -- baby don't hurt me
+                                                       (env', cod ++ cod')) (mem env)) -- haskell is love
+                                               (([],[],[]), []) -- haskell is life
+                                               ms
 
 fMembDecl :: Decl -> (Env -> (Env, Code))
 fMembDecl d = []
