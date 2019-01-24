@@ -2,10 +2,12 @@ class Hello
 {   
     void main()
     {
-        int b;
-        b = 5 + 5 * 3;
-        int c;
-        c = 5 * 3 + 5;
+        int i;
+        bool a;
+        bool b;
+        a = true;
+        b = false;
+        if(a && b){ i = 5 + 5;}else{ i = 2;}
+                        
     }
-    
 }

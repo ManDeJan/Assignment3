@@ -63,6 +63,7 @@ fExprVar (LowerId x) va = let loc = 37 in case va of
 
 fExprOp :: Token -> (ValueOrAddress -> Code) -> (ValueOrAddress -> Code) -> ValueOrAddress -> Code
 fExprOp (Operator "=") e1 e2 va = e2 Value ++ [LDS 0] ++ e1 Address ++ [STA 0]
+fExprOp (Operator "||")e1 e2 va = e1 Value ++ e2 Value ++ [OR]
 fExprOp (Operator op)  e1 e2 va = e1 Value ++ e2 Value ++ [opCodes ! op]
 
 

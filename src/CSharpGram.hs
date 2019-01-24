@@ -80,10 +80,12 @@ pStatDecl =  pStat
 pStat :: Parser Token Stat
 pStat =  StatExpr <$> pExpr' <*  sSemi
      <|> StatIf     <$ symbol KeyIf     <*> parenthesised pExpr' <*> pStat <*> optionalElse
+     <|> forLoop    <$ symbol KeyFor    <*  symbol POpen <*> pExpr' <* sSemi <*> pExpr' <* sSemi <*> pExpr' <* symbol PClose <*> pStat
      <|> StatWhile  <$ symbol KeyWhile  <*> parenthesised pExpr' <*> pStat
-     <|> StatReturn <$ symbol KeyReturn <*> pExpr'              <*  sSemi
+     <|> StatReturn <$ symbol KeyReturn <*> pExpr'               <*  sSemi
      <|> pBlock
      where optionalElse = option ((\_ x -> x) <$> symbol KeyElse <*> pStat) (StatBlock [])
+           forLoop init cond iter body = StatBlock [StatExpr init, StatWhile cond (StatBlock [body, StatExpr iter])] 
 
 pBlock :: Parser Token Stat
 pBlock = StatBlock <$> braced (many pStatDecl)

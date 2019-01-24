@@ -11,6 +11,7 @@ data Token = POpen    | PClose      -- parentheses     ()
            | COpen    | CClose      -- curly braces    {}
            | Comma    | Semicolon
            | KeyIf    | KeyElse
+           | KeyFor                 -- For loopy <3
            | KeyWhile | KeyReturn
            | KeyTry   | KeyCatch
            | KeyClass | KeyVoid
@@ -46,6 +47,7 @@ terminals =
     , ( Semicolon , ";"      )
     , ( KeyIf     , "if"     )
     , ( KeyElse   , "else"   )
+    , ( KeyFor    , "for"    )
     , ( KeyWhile  , "while"  )
     , ( KeyReturn , "return" )
     , ( KeyTry    , "try"    )
@@ -104,7 +106,7 @@ lexToken = greedyChoice
              ]
 
 lexicalScanner :: Parser Char [Token]
-lexicalScanner = lexWhiteSpace *> greedy (lexToken <* lexWhiteSpace <* optional (lexComment <* lexWhiteSpace)) <* eof
+lexicalScanner = lexWhiteSpace *> greedy (lexToken <* lexWhiteSpace <* many (lexComment <* lexWhiteSpace)) <* eof
 
 
 sStdType :: Parser Token Token
