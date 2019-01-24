@@ -20,7 +20,7 @@ codeAlgebra =
     )
 
 fClas :: Token -> [Env -> (Env, Code)] -> Code
-fClas c ms = [Bsr "main", HALT] ++ concat ms
+fClas c ms = [Bsr "main", HALT] ++ snd $ foldl (\(env, cod) mem -> (\(env', cod') -> (env', cod ++ cod')) (mem env)) (([],[],[]), []) ms
 
 fMembDecl :: Decl -> (Env -> (Env, Code))
 fMembDecl d = []

@@ -34,10 +34,15 @@ data Type = TypeVoid
           | TypeArray Type
           deriving (Eq,Show)
 
-type Env = [EnvVar]
+-- type Env = [EnvVar]
 
-data EnvVar   = EnvVar String DeclType Int -- name, type, offset
-data DeclType = Global | Local | Argument
+-- data EnvVar   = EnvVar String DeclType Int -- name, type, offset
+-- data DeclType = Global | Local | Argument
+
+type Env = ([String], [String], [String]) -- Globals, Locals, Args
+
+-- data EnvVar   = EnvVar String DeclType I 
+
 
 parenthesised p = pack (symbol POpen) p (symbol PClose)
 bracketed     p = pack (symbol SOpen) p (symbol SClose)

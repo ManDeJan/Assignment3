@@ -7,8 +7,10 @@ class Hello
         while (false) {
             i = i + 5;
         }
+        test();
     }
 
+    int j;
 
     void test1() {
         int i;
