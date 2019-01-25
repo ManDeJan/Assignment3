@@ -27,4 +27,9 @@ class Hello
             i + 1;
         }
     }
+
+    void test3() {
+        i = 3;
+        int i;
+    }
 }
