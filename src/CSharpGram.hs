@@ -41,6 +41,8 @@ data Type = TypeVoid
 
 type Env = ([String], [String], [String]) -- Globals, Locals, Args
 
+emptyEnv = ([],[],[])
+
 -- data EnvVar   = EnvVar String DeclType I 
 
 

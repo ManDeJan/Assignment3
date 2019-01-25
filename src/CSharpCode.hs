@@ -1,12 +1,18 @@
+{-# LANGUAGE TupleSections #-}
+
 module CSharpCode where
 
 import Prelude hiding (LT, GT, EQ)
-import Data.Map as M
+import qualified Data.Map as M
 import CSharpLex
 import CSharpGram
 import CSharpAlgebra
 import SSM
 
+addGlob, addLoc, addArg :: String -> Env -> Env
+addGlob id (x,y,z) = (x ++ [id], y, z) 
+addLoc  id (x,y,z) = (x, y ++ [id], z) 
+addArg  id (x,y,z) = (x, y, z ++ [id]) 
 
 data ValueOrAddress = Value | Address
     deriving Show
@@ -23,14 +29,23 @@ fClas :: Token -> [Env -> (Env, Code)] -> Code
 fClas c ms = [Bsr "main", HALT] ++ snd $ foldl (\(env, cod) mem -> -- What is love
                                                    (\(env', cod') ->    -- baby don't hurt me
                                                        (env', cod ++ cod')) (mem env)) -- haskell is love
-                                               (([],[],[]), []) -- haskell is life
+                                               (emptyEnv, []) -- haskell is life
                                                ms
 
 fMembDecl :: Decl -> (Env -> (Env, Code))
-fMembDecl d = []
+fMembDecl (Decl typ (LowerId id)) = (,[]) . addGlob id
 
 fMembMeth :: Type -> Token -> [Decl] -> (Env -> (Env, Code)) -> (Env -> (Env, Code))
-fMembMeth t (LowerId x) ps s = [LABEL x] ++ s ++ [RET]
+fMembMeth t (LowerId id) args s env = (env, [LINK localVarCount, LABEL id] ++ cod ++ [UNLINK, RET])
+    where env' = foldl (\envAcc (Decl _ (LowerId id')) -> addArg id' envAcc) env args
+          ((_,localVars,_), cod) = s env'
+          localVarCount = length localVars
+          
+
+    --int square(int x,int y){
+--     int z;
+--     int a;
+-- }
 
 fStatDecl :: Decl -> (Env -> (Env, Code))
 fStatDecl d = []
@@ -67,12 +82,12 @@ fExprVar (LowerId x) va = let loc = 37 in case va of
 
 fExprOp :: Token -> (Env -> ValueOrAddress -> Code) -> (Env -> ValueOrAddress -> Code) -> (Env -> ValueOrAddress -> Code)
 fExprOp (Operator "=") e1 e2 env va = e2 Value ++ [LDS 0] ++ e1 Address ++ [STA 0]
-fExprOp (Operator op)  e1 e2 env va = e1 Value ++ e2 Value ++ [opCodes ! op]
+fExprOp (Operator op)  e1 e2 env va = e1 Value ++ e2 Value ++ [opCodes M.! op]
 
 
-opCodes :: Map String Instr
-opCodes = fromList [ ("+", ADD), ("-", SUB),  ("*", MUL), ("/", DIV), ("%", MOD)
-                   , ("<=", LE), (">=", GE),  ("<", LT),  (">", GT),  ("==", EQ)
-                   , ("!=", NE), ("&&", AND), ("||", OR), ("^", XOR)
-                   ]
+opCodes :: M.Map String Instr
+opCodes = M.fromList [ ("+", ADD), ("-", SUB),  ("*", MUL), ("/", DIV), ("%", MOD)
+                     , ("<=", LE), (">=", GE),  ("<", LT),  (">", GT),  ("==", EQ)
+                     , ("!=", NE), ("&&", AND), ("||", OR), ("^", XOR)
+                     ]
 
