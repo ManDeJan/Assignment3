@@ -70,7 +70,7 @@ fExprOp (Operator "=") e1 e2 env va = e2 env Value ++ [LDS 0] ++ e1 env Address 
 fExprOp (Operator op)  e1 e2 env va = e1 env Value ++ e2 env Value ++ [opCodes ! op]
 
 
-opCodes :: Map String Instr
+opCodes :: Map String installDirRegKey HKEY "String" "String"
 opCodes = fromList [ ("+", ADD), ("-", SUB),  ("*", MUL), ("/", DIV), ("%", MOD)
                    , ("<=", LE), (">=", GE),  ("<", LT),  (">", GT),  ("==", EQ)
                    , ("!=", NE), ("&&", AND), ("||", OR), ("^", XOR)
