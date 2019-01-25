@@ -1,15 +1,19 @@
 class Hello
-{   
-    int i;
+{
+    int z;
     void main()
     {   
         int a;
         a = 5;
-        jemoeder(a);
+
+        int x;
+        x = jemoeder(a);
+        print(x);
     }
 
-    void jemoeder(int b) {
+    int jemoeder(int b) {
         int i;
-        i = 0 + b;
+        i = 7 + b;
+        return i;
     }
 }
