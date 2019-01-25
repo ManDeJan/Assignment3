@@ -27,11 +27,11 @@ codeAlgebra =
     )
 
 fClas :: Token -> [Env -> (Env, Code)] -> Code
-fClas c ms = [Bsr "main", HALT] ++ snd $ foldl (\(env, cod) mem -> -- What is love
-                                                   (\(env', cod') ->    -- baby don't hurt me
-                                                       (env', cod ++ cod')) (mem env)) -- haskell is love
-                                               (emptyEnv, []) -- haskell is life
-                                               ms
+fClas c ms = [Bsr "main", HALT] ++ snd (foldl (\(env, cod) mem -> -- What is love
+                                                  (\(env', cod') ->    -- baby don't hurt me
+                                                      (env', cod ++ cod')) (mem env)) -- haskell is love
+                                              (emptyEnv, []) -- haskell is life
+                                              ms)
 
 fMembDecl :: Decl -> (Env -> (Env, Code))
 fMembDecl (Decl typ (LowerId id)) = (,[]) . addGlob id
@@ -49,7 +49,7 @@ fStatExpr :: (Env -> ValueOrAddress -> Code) -> (Env -> (Env, Code))
 fStatExpr e env = (env, e env Value ++ [pop])
 
 fStatIf :: (Env -> ValueOrAddress -> Code) -> (Env -> (Env, Code)) -> (Env -> (Env, Code)) -> (Env -> (Env, Code))
-fStatIf e s1 s2 env = c ++ [BRF (n1 + 2)] ++ s1cod ++ [BRA n2] ++ s2cod
+fStatIf e s1 s2 env = (s2env, c ++ [BRF (n1 + 2)] ++ s1cod ++ [BRA n2] ++ s2cod)
     where
         c        = e env Value
         (n1, n2) = (codeSize s1cod, codeSize s2cod)
@@ -57,20 +57,25 @@ fStatIf e s1 s2 env = c ++ [BRF (n1 + 2)] ++ s1cod ++ [BRA n2] ++ s2cod
         (s2env,s2cod) = s2 s1env
 
 fStatWhile :: (Env -> ValueOrAddress -> Code) -> (Env -> (Env, Code)) -> (Env -> (Env, Code))
-fStatWhile e s1 = [BRA n] ++ s1 ++ c ++ [BRT (-(n + k + 2))]
+fStatWhile e s1 env = (s1env, [BRA n] ++ s1cod ++ c ++ [BRT (-(n + k + 2))])
     where
-        c = e Value
-        (n, k) = (codeSize s1, codeSize c)
+        c = e env Value
+        (s1env, s1cod) = s1 env
+        (n, k) = (codeSize s1cod, codeSize c)
 
 fStatReturn :: (Env -> ValueOrAddress -> Code) -> (Env -> (Env, Code))
-fStatReturn e = e Value ++ [pop] ++ [RET]
+fStatReturn e env = (env, e env Value ++ [pop] ++ [RET])
 
 fStatBlock :: [Env -> (Env, Code)] -> (Env -> (Env, Code))
-fStatBlock = concat
+fStatBlock ms env = foldl (\(env, cod) mem -> -- What is love
+                        (\(env', cod') ->    -- baby don't hurt me
+                            (env', cod ++ cod')) (mem env)) -- haskell is love
+                    (emptyEnv, []) -- haskell is life
+                    ms
 
 fExprCon :: Token -> (Env -> ValueOrAddress -> Code)
-fExprCon (ConstInt  n) env va     = [LDC n]
-fExprCon (ConstBool b) env va     = [LDC $ fromEnum b]
+fExprCon (ConstInt  n) env va = [LDC n]
+fExprCon (ConstBool b) env va = [LDC $ fromEnum b]
 
 fExprVar :: Token -> (Env -> ValueOrAddress -> Code)
 fExprVar (LowerId id) env va = let loc = findVarOffset id env in case va of
@@ -79,17 +84,17 @@ fExprVar (LowerId id) env va = let loc = findVarOffset id env in case va of
 
 findVarOffset :: String -> Env -> Int
 findVarOffset var (globs,locals,args) 
-  | inArg     = (getOffset (elemIndex var args)) * (-1) - 1
+  | inArg     = getOffset (elemIndex var args) * (-1) - 1
   | inLocal   = getOffset (elemIndex var locals) 
   | inGlobal  = getOffset (elemIndex var globs)
   | otherwise = error "Variable not declared"
-    where inArg   = elem var args
-          inLocal = elem var locals
-          inGlobal= elem var globs
+    where inArg   = var `elem` args
+          inLocal = var `elem` locals
+          inGlobal= var `elem` globs
 
 getOffset :: Maybe Int -> Int
-getOffset (Nothing) = error "Variable not declared"
-getOffset (Just b)  = b
+getOffset (Just b) = b
+getOffset Nothing  = error "Variable not declared"
 
 fExprOp :: Token -> (Env -> ValueOrAddress -> Code) -> (Env -> ValueOrAddress -> Code) -> (Env -> ValueOrAddress -> Code)
 fExprOp (Operator "=") e1 e2 env va = e2' ++ [LDS 0] ++ e1' ++ [STA 0]
