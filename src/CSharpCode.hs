@@ -37,7 +37,7 @@ fMembDecl :: Decl -> (Env -> (Env, Code))
 fMembDecl (Decl typ (LowerId id)) = (,[]) . addGlob id
 
 fMembMeth :: Type -> Token -> [Decl] -> (Env -> (Env, Code)) -> (Env -> (Env, Code))
-fMembMeth t (LowerId id) args s env = (env, [LINK localVarCount, LABEL id] ++ cod ++ [UNLINK, RET])
+fMembMeth t (LowerId id) args s env = (env, [LABEL id, LINK localVarCount] ++ cod ++ [UNLINK, RET])
     where env' = foldl (\envAcc (Decl _ (LowerId id')) -> addArg id' envAcc) env args
           ((_,localVars,_), cod) = s env'
           localVarCount = length localVars
@@ -68,9 +68,9 @@ fStatReturn e env = (env, e env Value ++ [pop] ++ [RET])
 
 fStatBlock :: [Env -> (Env, Code)] -> (Env -> (Env, Code))
 fStatBlock ms env = foldl (\(env, cod) mem -> -- What is love
-                        (\(env', cod') ->    -- baby don't hurt me
+                        (\(env', cod') ->  -- baby don't hurt me
                             (env', cod ++ cod')) (mem env)) -- haskell is love
-                    (emptyEnv, []) -- haskell is life
+                    (env, []) -- haskell is life
                     ms
 
 fExprCon :: Token -> (Env -> ValueOrAddress -> Code)
@@ -85,12 +85,12 @@ fExprVar (LowerId id) env va = let loc = findVarOffset id env in case va of
 findVarOffset :: String -> Env -> Int
 findVarOffset var (globs,locals,args) 
   | inArg     = getOffset (elemIndex var args) * (-1) - 1
-  | inLocal   = getOffset (elemIndex var locals) 
+  | inLocal   = getOffset (elemIndex var locals) + 1
   | inGlobal  = getOffset (elemIndex var globs)
   | otherwise = error "Variable not declared"
-    where inArg   = var `elem` args
-          inLocal = var `elem` locals
-          inGlobal= var `elem` globs
+    where inArg    = var `elem` args
+          inLocal  = var `elem` locals
+          inGlobal = var `elem` globs
 
 getOffset :: Maybe Int -> Int
 getOffset (Just b) = b
@@ -98,17 +98,17 @@ getOffset Nothing  = error "Variable not declared"
 
 fExprOp :: Token -> (Env -> ValueOrAddress -> Code) -> (Env -> ValueOrAddress -> Code) -> (Env -> ValueOrAddress -> Code)
 fExprOp (Operator "=") e1 e2 env va = e2' ++ [LDS 0] ++ e1' ++ [STA 0]
-    where e1'     = e1 env Address
-          e2'     = e2 env Value
+    where e1'    = e1 env Address
+          e2'    = e2 env Value
 fExprOp (Operator op) e1 e2 env va
   | isAnd     = e1' ++ [BRF (n + k + 4)] ++ e2' ++ [BRF 4, LDC 1, BRA 2, LDC 0]
   | isOr      = e1' ++ [BRT (n + k + 4)] ++ e2' ++ [BRT 4, LDC 0, BRA 2, LDC 1]
   | otherwise = e1' ++ e2' ++ [opCodes M.! op]
-    where isAnd = op == "&&"
-          isOr  = op == "||"
-          e1'   = e1 env Value
-          e2'   = e2 env Value
-          (n, k)= (codeSize e1', codeSize e2')
+    where isAnd  = op == "&&"
+          isOr   = op == "||"
+          e1'    = e1 env Value
+          e2'    = e2 env Value
+          (n, k) = (codeSize e1', codeSize e2')
 
 opCodes :: M.Map String Instr
 opCodes = M.fromList [ ("+", ADD), ("-", SUB),  ("*", MUL), ("/", DIV), ("%", MOD)
