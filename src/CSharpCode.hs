@@ -74,8 +74,8 @@ fStatBlock ms env = foldl (\(env, cod) mem -> -- What is love
                     ms
 
 fExprCon :: Token -> (Env -> ValueOrAddress -> Code)
-fExprCon (ConstInt  n) env va = [LDC n]
-fExprCon (ConstBool b) env va = [LDC $ fromEnum b]
+fExprCon (ConstInt  n) _ _     = [LDC n]
+fExprCon (ConstBool b) _ _     = [LDC $ fromEnum b]
 
 fExprVar :: Token -> (Env -> ValueOrAddress -> Code)
 fExprVar (LowerId id) env va = let loc = findVarOffset id env in case va of
