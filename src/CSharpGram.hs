@@ -65,8 +65,7 @@ pExprBitwiseOr :: Parser Token Expr
 pExprBitwiseOr = chainl pExprAssignment (ExprOper <$> sOperatorBitwiseOr) 
 
 pExprAssignment :: Parser Token Expr
-pExprAssignment = chainr pExprSimple (ExprOper <$> sOperatorAssignment) 
-     
+pExprAssignment = chainr pExprSimple (ExprOper <$> sOperatorAssignment)    
 
 pExprSimple :: Parser Token Expr
 pExprSimple =  ExprConst <$> sConst
@@ -94,7 +93,6 @@ pStat =  StatExpr <$> pExpr' <*  sSemi
 pBlock :: Parser Token Stat
 pBlock = StatBlock <$> braced (many pStatDecl)
 
-
 pMeth :: Parser Token Member
 pMeth = MemberM <$> methRetType <*> sLowerId <*> methArgList <*> pBlock
     where
@@ -117,4 +115,3 @@ pDeclSemi = const <$> pDecl <*> sSemi
 
 pClass :: Parser Token Class
 pClass = Class <$ symbol KeyClass <*> sUpperId <*> braced (many pMember)
-
