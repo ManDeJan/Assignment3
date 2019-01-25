@@ -23,6 +23,7 @@ data Stat = StatDecl   Decl
 data Expr = ExprConst  Token
           | ExprVar    Token
           | ExprOper   Token Expr Expr
+          | ExprCall   Token [Expr]
           deriving Show
 
 data Decl = Decl Type Token
@@ -70,7 +71,11 @@ pExprAssignment = chainr pExprSimple (ExprOper <$> sOperatorAssignment)
 pExprSimple :: Parser Token Expr
 pExprSimple =  ExprConst <$> sConst
            <|> ExprVar   <$> sLowerId
+           <|> pExprCall
            <|> parenthesised pExpr'
+
+pExprCall :: Parser Token Expr
+pExprCall = ExprCall <$> sLowerId <*> parenthesised (option (listOf pExprSimple (symbol Comma)) [])
 
 pMember :: Parser Token Member
 pMember =  MemberD <$> pDeclSemi

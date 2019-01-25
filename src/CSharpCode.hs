@@ -23,7 +23,7 @@ codeAlgebra =
     ( fClas
     , (fMembDecl, fMembMeth)
     , (fStatDecl, fStatExpr, fStatIf, fStatWhile, fStatReturn, fStatBlock)
-    , (fExprCon, fExprVar, fExprOp)
+    , (fExprCon, fExprVar, fExprOp, fExprCall)
     )
 
 fClas :: Token -> [Env -> (Env, Code)] -> Code
@@ -109,6 +109,10 @@ fExprOp (Operator op) e1 e2 env va
           e1'    = e1 env Value
           e2'    = e2 env Value
           (n, k) = (codeSize e1', codeSize e2')
+
+fExprCall :: Token -> [(Env -> ValueOrAddress -> Code)] -> (Env -> ValueOrAddress -> Code)
+fExprCall (LowerId "print") list env va = concatMap (\p -> p env Value) list ++ replicate (length list) (TRAP 0)
+fExprCall (LowerId id) list env va      = concatMap (\p -> p env Value) (reverse list) ++ [Bsr id]
 
 opCodes :: M.Map String Instr
 opCodes = M.fromList [ ("+", ADD), ("-", SUB),  ("*", MUL), ("/", DIV), ("%", MOD)
