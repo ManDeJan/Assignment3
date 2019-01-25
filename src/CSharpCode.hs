@@ -4,6 +4,7 @@ module CSharpCode where
 
 import Prelude hiding (LT, GT, EQ)
 import qualified Data.Map as M
+import Data.List
 import CSharpLex
 import CSharpGram
 import CSharpAlgebra
@@ -72,14 +73,28 @@ fExprCon (ConstInt  n) env va     = [LDC n]
 fExprCon (ConstBool b) env va     = [LDC $ fromEnum b]
 
 fExprVar :: Token -> (Env -> ValueOrAddress -> Code)
-fExprVar (LowerId x) env va = let loc = 37 in case va of
+fExprVar (LowerId id) env va = let loc = findVarOffset id env in case va of
                                               Value    ->  [LDL  loc]
                                               Address  ->  [LDLA loc]
 
+findVarOffset :: String -> Env -> Int
+findVarOffset var (globs,locals,args) 
+  | inArg     = (getOffset (elemIndex var args)) * (-1) - 1
+  | inLocal   = getOffset (elemIndex var locals) 
+  | inGlobal  = getOffset (elemIndex var globs)
+  | otherwise = error "Variable not declared"
+    where inArg   = elem var args
+          inLocal = elem var locals
+          inGlobal= elem var globs
+
+getOffset :: Maybe Int -> Int
+getOffset (Nothing) = error "Variable not declared"
+getOffset (Just b)  = b
+
 fExprOp :: Token -> (Env -> ValueOrAddress -> Code) -> (Env -> ValueOrAddress -> Code) -> (Env -> ValueOrAddress -> Code)
 fExprOp (Operator "=") e1 e2 env va = e2' ++ [LDS 0] ++ e1' ++ [STA 0]
-  where e1'     = e1 env Address
-        e2'     = e2 env Value
+    where e1'     = e1 env Address
+          e2'     = e2 env Value
 fExprOp (Operator op) e1 e2 env va
   | isAnd     = e1' ++ [BRF (n + k + 4)] ++ e2' ++ [BRF 4, LDC 1, BRA 2, LDC 0]
   | isOr      = e1' ++ [BRT (n + k + 4)] ++ e2' ++ [BRT 4, LDC 0, BRA 2, LDC 1]
