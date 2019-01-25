@@ -72,18 +72,27 @@ fStatBlock :: [Env -> (Env, Code)] -> (Env -> (Env, Code))
 fStatBlock = concat
 
 fExprCon :: Token -> (Env -> ValueOrAddress -> Code)
-fExprCon (ConstInt  n) va     = [LDC n]
-fExprCon (ConstBool b) va     = [LDC $ fromEnum b]
+fExprCon (ConstInt  n) env va     = [LDC n]
+fExprCon (ConstBool b) env va     = [LDC $ fromEnum b]
 
 fExprVar :: Token -> (Env -> ValueOrAddress -> Code)
-fExprVar (LowerId x) va = let loc = 37 in case va of
+fExprVar (LowerId x) env va = let loc = 37 in case va of
                                               Value    ->  [LDL  loc]
                                               Address  ->  [LDLA loc]
 
 fExprOp :: Token -> (Env -> ValueOrAddress -> Code) -> (Env -> ValueOrAddress -> Code) -> (Env -> ValueOrAddress -> Code)
-fExprOp (Operator "=") e1 e2 env va = e2 Value ++ [LDS 0] ++ e1 Address ++ [STA 0]
-fExprOp (Operator op)  e1 e2 env va = e1 Value ++ e2 Value ++ [opCodes M.! op]
-
+fExprOp (Operator "=") e1 e2 env va = e2' ++ [LDS 0] ++ e1' ++ [STA 0]
+  where e1'     = e1 env Address
+        e2'     = e2 env Value
+fExprOp (Operator op) e1 e2 env va
+  | isAnd     = e1' ++ [BRF (n + k + 4)] ++ e2' ++ [BRF 4, LDC 1, BRA 2, LDC 0]
+  | isOr      = e1' ++ [BRT (n + k + 4)] ++ e2' ++ [BRT 4, LDC 0, BRA 2, LDC 1]
+  | otherwise = e1' ++ e2' ++ [opCodes M.! op]
+    where isAnd = op == "&&"
+          isOr  = op == "||"
+          e1'   = e1 env Value
+          e2'   = e2 env Value
+          (n, k)= (codeSize e1', codeSize e2')
 
 opCodes :: M.Map String Instr
 opCodes = M.fromList [ ("+", ADD), ("-", SUB),  ("*", MUL), ("/", DIV), ("%", MOD)
