@@ -41,23 +41,19 @@ fMembMeth t (LowerId id) args s env = (env, [LINK localVarCount, LABEL id] ++ co
           ((_,localVars,_), cod) = s env'
           localVarCount = length localVars
           
-
-    --int square(int x,int y){
---     int z;
---     int a;
--- }
-
 fStatDecl :: Decl -> (Env -> (Env, Code))
-fStatDecl d = []
+fStatDecl (Decl typ (LowerId id)) = (,[]) . addLoc id
 
 fStatExpr :: (Env -> ValueOrAddress -> Code) -> (Env -> (Env, Code))
-fStatExpr e = e Value ++ [pop]
+fStatExpr e env = (env, e env Value ++ [pop])
 
 fStatIf :: (Env -> ValueOrAddress -> Code) -> (Env -> (Env, Code)) -> (Env -> (Env, Code)) -> (Env -> (Env, Code))
-fStatIf e s1 s2 = c ++ [BRF (n1 + 2)] ++ s1 ++ [BRA n2] ++ s2
+fStatIf e s1 s2 env = c ++ [BRF (n1 + 2)] ++ s1cod ++ [BRA n2] ++ s2cod
     where
-        c        = e Value
-        (n1, n2) = (codeSize s1, codeSize s2)
+        c        = e env Value
+        (n1, n2) = (codeSize s1cod, codeSize s2cod)
+        (s1env,s1cod) = s1 env
+        (s2env,s2cod) = s2 s1env
 
 fStatWhile :: (Env -> ValueOrAddress -> Code) -> (Env -> (Env, Code)) -> (Env -> (Env, Code))
 fStatWhile e s1 = [BRA n] ++ s1 ++ c ++ [BRT (-(n + k + 2))]
