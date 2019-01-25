@@ -1,13 +1,13 @@
 class Hello
 {   
+    int i;
     void main()
     {
-        test();
+        int j;
+        i = 10;
+        j = 5;
     }
 
-    void test() {
-        return;
-    }
 
     // void test1() {
     //     int i;

@@ -78,9 +78,12 @@ fExprCon (ConstInt  n) _ _     = [LDC n]
 fExprCon (ConstBool b) _ _     = [LDC $ fromEnum b]
 
 fExprVar :: Token -> (Env -> ValueOrAddress -> Code)
-fExprVar (LowerId id) env va = let loc = findVarOffset id env in case va of
-                                              Value    ->  [LDL  loc]
-                                              Address  ->  [LDLA loc]
+fExprVar (LowerId id) env@(_,locals,_) va = 
+    let offset = findVarOffset id env in case va of
+        Value    -> if local then [LDL  offset] else [LDC almostUnreasonablyLargeMagicNumber, LDA  offset]
+        Address  -> if local then [LDLA offset] else [LDC almostUnreasonablyLargeMagicNumber, LDAA offset]
+    where almostUnreasonablyLargeMagicNumber = 1000
+          local = id `elem` locals
 
 findVarOffset :: String -> Env -> Int
 findVarOffset var (globs,locals,args) 
