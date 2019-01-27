@@ -1,3 +1,8 @@
+{-
+  Authors:
+    Jan Halsema,
+    Quinten Stekelenburg  
+-}
 module SSM where
 
 

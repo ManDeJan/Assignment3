@@ -1,5 +1,9 @@
 {-# LANGUAGE TupleSections #-}
-
+{-
+  Authors:
+    Jan Halsema,
+    Quinten Stekelenburg  
+-}
 module CSharpCode where
 
 import Prelude hiding (LT, GT, EQ)
@@ -26,6 +30,12 @@ codeAlgebra =
     , (fExprCon, fExprVar, fExprOp, fExprCall)
     )
 
+{-
+  Task 10
+  The enviroment is created and then passed on to the next iteration, 
+  so the environment grows after each iteration (if a new variable is declared that is). 
+  Which allows local variables to be used.
+-}
 fClas :: Token -> [Env -> (Env, Code)] -> Code
 fClas c ms = [Bsr "main", HALT] ++ snd (foldl (\(env, cod) mem ->
                                                   (\(env', cod') ->
@@ -66,6 +76,12 @@ fStatWhile e s1 env = (s1env, [BRA n] ++ s1cod ++ c ++ [BRT (-(n + k + 2))])
 fStatReturn :: (Env -> ValueOrAddress -> Code) -> (Env -> (Env, Code))
 fStatReturn e env = (env, e env Value ++ [STR R3] ++ [UNLINK] ++ [RET])
 
+{-
+  Task 10
+  The enviroment is created and then passed on to the next iteration, 
+  so the environment grows after each iteration (if a new variable is declared that is). 
+  Which allows local variables to be used.
+-}
 fStatBlock :: [Env -> (Env, Code)] -> (Env -> (Env, Code))
 fStatBlock ms env = foldl (\(env, cod) mem ->
                         (\(env', cod') -> 
@@ -82,6 +98,10 @@ fExprCon :: Token -> (Env -> ValueOrAddress -> Code)
 fExprCon (ConstInt  n) _ _ = [LDC n]
 fExprCon (ConstBool b) _ _ = [LDC $ fromEnum b]
 
+{-
+  Task 10
+  Loads a variable, based on where it is declared.
+-}
 fExprVar :: Token -> (Env -> ValueOrAddress -> Code)
 fExprVar (LowerId id) env@(_,locals,args) va = 
     let offset = findVarOffset id env in case va of
@@ -90,6 +110,7 @@ fExprVar (LowerId id) env@(_,locals,args) va =
     where almostUnreasonablyLargeMagicNumber = 1000
           local = id `elem` (args ++ locals) 
 
+--Bonus task, whenever a variable is not found anywhere, it must've not been declared so an error is thrown.
 findVarOffset :: String -> Env -> Int
 findVarOffset var (globs,locals,args) 
   | inArg     = getOffset (elemIndex var args) * (-2) - 1
@@ -136,6 +157,8 @@ fExprOp (Operator op) e1 e2 env va
   Function calls are translated to SSM Code here, the arguments are handled in a reverse order, 
   this has to do with the way we store our arguments.
 
+  Task 9
+  The result of the functions are stored in the register, by using [LDR R3].
 -}
 fExprCall :: Token -> [Env -> ValueOrAddress -> Code] -> (Env -> ValueOrAddress -> Code)
 fExprCall (LowerId "print") list env va = concatMap (\p -> p env Value) list ++ replicate (length list) (TRAP 0) ++ [LDR R3]
