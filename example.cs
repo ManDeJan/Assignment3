@@ -4,8 +4,10 @@ class Hello
     void main()
     {   
         int a;
+        int f;
+        f = 3;
         a = 5;
-        print(a);
+        print(a, f);
         int x;
         x = jemoeder(a);
         print(x);

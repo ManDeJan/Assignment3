@@ -92,6 +92,12 @@ pStatDecl :: Parser Token Stat
 pStatDecl =  pStat
          <|> StatDecl <$> pDeclSemi
 
+{-
+  Task 5
+  For loop is parsed here. The 3 arguments for a for loop are added, including the body.
+  The 3 arguments are : init (example: int i = 0), condition (i < 5), and what should hapen after an iteration (i = i + 1).
+  The form that the for loop should be in is: for(int i = 0; i < 5; i = i + 1)
+-}
 pStat :: Parser Token Stat
 pStat =  StatExpr <$> pExpr' <*  sSemi
      <|> StatIf     <$ symbol KeyIf     <*> parenthesised pExpr' <*> pStat <*> optionalElse

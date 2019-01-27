@@ -27,10 +27,10 @@ codeAlgebra =
     )
 
 fClas :: Token -> [Env -> (Env, Code)] -> Code
-fClas c ms = [Bsr "main", HALT] ++ snd (foldl (\(env, cod) mem -> -- What is love
-                                                  (\(env', cod') ->    -- baby don't hurt me
-                                                      (env', cod ++ cod')) (mem env)) -- haskell is love
-                                              (emptyEnv, []) -- haskell is life
+fClas c ms = [Bsr "main", HALT] ++ snd (foldl (\(env, cod) mem ->
+                                                  (\(env', cod') ->
+                                                      (env', cod ++ cod')) (mem env))
+                                              (emptyEnv, []) 
                                               ms)
 
 fMembDecl :: Decl -> (Env -> (Env, Code))
@@ -67,10 +67,10 @@ fStatReturn :: (Env -> ValueOrAddress -> Code) -> (Env -> (Env, Code))
 fStatReturn e env = (env, e env Value ++ [STR R3] ++ [UNLINK] ++ [RET])
 
 fStatBlock :: [Env -> (Env, Code)] -> (Env -> (Env, Code))
-fStatBlock ms env = foldl (\(env, cod) mem -> -- What is love
-                        (\(env', cod') ->  -- baby don't hurt me
-                            (env', cod ++ cod')) (mem env)) -- haskell is love
-                    (env, []) -- haskell is life
+fStatBlock ms env = foldl (\(env, cod) mem ->
+                        (\(env', cod') -> 
+                            (env', cod ++ cod')) (mem env)) 
+                    (env, [])
                     ms
 
 fExprCon :: Token -> (Env -> ValueOrAddress -> Code)
