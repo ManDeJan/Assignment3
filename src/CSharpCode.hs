@@ -39,8 +39,8 @@ fMembDecl (Decl typ (LowerId id)) = (,[]) . addGlob id
 fMembMeth :: Type -> Token -> [Decl] -> (Env -> (Env, Code)) -> (Env -> (Env, Code))
 fMembMeth t (LowerId id) args s env = (env, [LABEL id, LINK localVarCount] ++ cod ++ [UNLINK, RET])
     where env' = foldl (\envAcc (Decl _ (LowerId id')) -> addArg id' envAcc) env args
-          ((_,localVars,_), cod) = s env'
-          localVarCount = length localVars
+          ((_,locals,_), cod) = s env'
+          localVarCount = length locals
           
 fStatDecl :: Decl -> (Env -> (Env, Code))
 fStatDecl (Decl typ (LowerId id)) = (,[]) . addLoc id
@@ -64,7 +64,7 @@ fStatWhile e s1 env = (s1env, [BRA n] ++ s1cod ++ c ++ [BRT (-(n + k + 2))])
         (n, k) = (codeSize s1cod, codeSize c)
 
 fStatReturn :: (Env -> ValueOrAddress -> Code) -> (Env -> (Env, Code))
-fStatReturn e env = (env, e env Value ++ [pop] ++ [RET])
+fStatReturn e env = (env, e env Value ++ [STR R3] ++ [UNLINK] ++ [RET])
 
 fStatBlock :: [Env -> (Env, Code)] -> (Env -> (Env, Code))
 fStatBlock ms env = foldl (\(env, cod) mem -> -- What is love
@@ -74,17 +74,20 @@ fStatBlock ms env = foldl (\(env, cod) mem -> -- What is love
                     ms
 
 fExprCon :: Token -> (Env -> ValueOrAddress -> Code)
-fExprCon (ConstInt  n) _ _     = [LDC n]
-fExprCon (ConstBool b) _ _     = [LDC $ fromEnum b]
+fExprCon (ConstInt  n) _ _ = [LDC n]
+fExprCon (ConstBool b) _ _ = [LDC $ fromEnum b]
 
 fExprVar :: Token -> (Env -> ValueOrAddress -> Code)
-fExprVar (LowerId id) env va = let loc = findVarOffset id env in case va of
-                                              Value    ->  [LDL  loc]
-                                              Address  ->  [LDLA loc]
+fExprVar (LowerId id) env@(_,locals,args) va = 
+    let offset = findVarOffset id env in case va of
+        Value    -> if local then [LDL  offset] else [LDC almostUnreasonablyLargeMagicNumber, LDA  offset]
+        Address  -> if local then [LDLA offset] else [LDC almostUnreasonablyLargeMagicNumber, LDAA offset]
+    where almostUnreasonablyLargeMagicNumber = 1000
+          local = id `elem` (args ++ locals) 
 
 findVarOffset :: String -> Env -> Int
 findVarOffset var (globs,locals,args) 
-  | inArg     = getOffset (elemIndex var args) * (-1) - 1
+  | inArg     = getOffset (elemIndex var args) * (-2) - 1
   | inLocal   = getOffset (elemIndex var locals) + 1
   | inGlobal  = getOffset (elemIndex var globs)
   | otherwise = error "Variable not declared"
@@ -110,9 +113,9 @@ fExprOp (Operator op) e1 e2 env va
           e2'    = e2 env Value
           (n, k) = (codeSize e1', codeSize e2')
 
-fExprCall :: Token -> [(Env -> ValueOrAddress -> Code)] -> (Env -> ValueOrAddress -> Code)
-fExprCall (LowerId "print") list env va = concatMap (\p -> p env Value) list ++ replicate (length list) (TRAP 0)
-fExprCall (LowerId id) list env va      = concatMap (\p -> p env Value) (reverse list) ++ [Bsr id]
+fExprCall :: Token -> [Env -> ValueOrAddress -> Code] -> (Env -> ValueOrAddress -> Code)
+fExprCall (LowerId "print") list env va = concatMap (\p -> p env Value) list ++ replicate (length list) (TRAP 0) ++ [LDR R3]
+fExprCall (LowerId id) list env va      = concatMap (\p -> p env Value) (reverse list) ++ [Bsr id] ++ [AJS (-(length list))] ++ [LDR R3]
 
 opCodes :: M.Map String Instr
 opCodes = M.fromList [ ("+", ADD), ("-", SUB),  ("*", MUL), ("/", DIV), ("%", MOD)
