@@ -73,6 +73,11 @@ fStatBlock ms env = foldl (\(env, cod) mem ->
                     (env, [])
                     ms
 
+{-
+  Task 1
+  Turns a boolean into a number and puts it on the stack.
+  Same goes for an int, which could be a character
+-}
 fExprCon :: Token -> (Env -> ValueOrAddress -> Code)
 fExprCon (ConstInt  n) _ _ = [LDC n]
 fExprCon (ConstBool b) _ _ = [LDC $ fromEnum b]
@@ -99,8 +104,16 @@ getOffset :: Maybe Int -> Int
 getOffset (Just b) = b
 getOffset Nothing  = error "Variable not declared"
 
-
-
+{-
+  Task 7
+  Lazy evaluation for logical operators is done here. For an:
+  Or : If the first argument is True, then the rest of the evaluation is skipped, and a 1 (true) is loaded onto the stack.
+       If the first argument is False, the second argument is checked.
+          If the second argument is False, a 0 is loaded and the rest of the code is skipped.
+  And: If the first argument is False, then the rest of the evaluation is skipped, and a 0 (false) is loaded onto the stack
+       If the the first argument is True, the second argument is checked
+          if the second argument is true, a 1 is loaded, and the rest of the code is skipped. 
+-}
 fExprOp :: Token -> (Env -> ValueOrAddress -> Code) -> (Env -> ValueOrAddress -> Code) -> (Env -> ValueOrAddress -> Code)
 fExprOp (Operator "=") e1 e2 env va = e2' ++ [LDS 0] ++ e1' ++ [STA 0]
     where e1'    = e1 env Address

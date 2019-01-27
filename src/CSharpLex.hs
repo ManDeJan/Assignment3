@@ -74,6 +74,11 @@ lexLowerId = (\x xs -> LowerId (x:xs)) <$> satisfy isLower <*> greedy (satisfy i
 lexUpperId :: Parser Char Token
 lexUpperId = (\x xs -> UpperId (x:xs)) <$> satisfy isUpper <*> greedy (satisfy isAlphaNum)
 
+{-
+  Task 1
+  These parsers parse booleans and characters
+  Characters are changed to numbers instantly, where the booleans are only changed in the CSharpCode
+-}
 lexConstBool :: Parser Char Token
 lexConstBool = ConstBool True  <$ token "true" <|>
                ConstBool False <$ token "false"
