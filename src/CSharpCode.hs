@@ -99,6 +99,8 @@ getOffset :: Maybe Int -> Int
 getOffset (Just b) = b
 getOffset Nothing  = error "Variable not declared"
 
+
+
 fExprOp :: Token -> (Env -> ValueOrAddress -> Code) -> (Env -> ValueOrAddress -> Code) -> (Env -> ValueOrAddress -> Code)
 fExprOp (Operator "=") e1 e2 env va = e2' ++ [LDS 0] ++ e1' ++ [STA 0]
     where e1'    = e1 env Address
@@ -113,6 +115,15 @@ fExprOp (Operator op) e1 e2 env va
           e2'    = e2 env Value
           (n, k) = (codeSize e1', codeSize e2')
 
+{-
+  Task 8 
+  If a function call is to print, the TRAP 0 is repeated for the amount of arguments.
+
+  Task 6
+  Function calls are translated to SSM Code here, the arguments are handled in a reverse order, 
+  this has to do with the way we store our arguments.
+
+-}
 fExprCall :: Token -> [Env -> ValueOrAddress -> Code] -> (Env -> ValueOrAddress -> Code)
 fExprCall (LowerId "print") list env va = concatMap (\p -> p env Value) list ++ replicate (length list) (TRAP 0) ++ [LDR R3]
 fExprCall (LowerId id) list env va      = concatMap (\p -> p env Value) (reverse list) ++ [Bsr id] ++ [AJS (-(length list))] ++ [LDR R3]
