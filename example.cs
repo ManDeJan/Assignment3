@@ -1,32 +1,21 @@
 class Hello
-{   
+{
+    int z;
     void main()
-    {
-        test();
+    {   
+        int a;
+        int f;
+        f = 3;
+        a = 5;
+        print(a, f);
+        int x;
+        x = jemoeder(a);
+        print(x);
     }
 
-    void test() {
-        return;
+    int jemoeder(int b) {
+        int i;
+        i = 7 + b;
+        return i;
     }
-
-    // void test1() {
-    //     int i;
-    //     for (i = 1; i < 5; i + 1) {
-    //         i = i * 2;
-    //     }
-    // }
-
-    // void test2() {
-    //     int i;
-    //     i = 1;
-    //     while (i < 5) {
-    //         i = i * 2;
-    //         i + 1;
-    //     }
-    // }
-
-    // void test3() {
-    //     i = 3;
-    //     int i;
-    // }
 }

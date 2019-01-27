@@ -23,6 +23,7 @@ data Stat = StatDecl   Decl
 data Expr = ExprConst  Token
           | ExprVar    Token
           | ExprOper   Token Expr Expr
+          | ExprCall   Token [Expr]
           deriving Show
 
 data Decl = Decl Type Token
@@ -42,6 +43,13 @@ parenthesised p = pack (symbol POpen) p (symbol PClose)
 bracketed     p = pack (symbol SOpen) p (symbol SClose)
 braced        p = pack (symbol COpen) p (symbol CClose)
 
+{-
+  Task 2 Operator priority
+  Checks the priorities in order, according to https://en.wikipedia.org/wiki/Order_of_operations.
+
+  Task 4 Left and right associative.
+  The assignment operator (pExprAssignment) is checked in a right associative manner.  
+-} 
 
 pExpr' :: Parser Token Expr
 pExpr' = chainl pExprMultis (ExprOper <$> sOperatorAddis) 
@@ -70,7 +78,11 @@ pExprAssignment = chainr pExprSimple (ExprOper <$> sOperatorAssignment)
 pExprSimple :: Parser Token Expr
 pExprSimple =  ExprConst <$> sConst
            <|> ExprVar   <$> sLowerId
+           <|> pExprCall
            <|> parenthesised pExpr'
+
+pExprCall :: Parser Token Expr
+pExprCall = ExprCall <$> sLowerId <*> parenthesised (option (listOf pExprSimple (symbol Comma)) [])
 
 pMember :: Parser Token Member
 pMember =  MemberD <$> pDeclSemi
@@ -80,6 +92,12 @@ pStatDecl :: Parser Token Stat
 pStatDecl =  pStat
          <|> StatDecl <$> pDeclSemi
 
+{-
+  Task 5
+  For loop is parsed here. The 3 arguments for a for loop are added, including the body.
+  The 3 arguments are : init (example: int i = 0), condition (i < 5), and what should hapen after an iteration (i = i + 1).
+  The form that the for loop should be in is: for(int i = 0; i < 5; i = i + 1)
+-}
 pStat :: Parser Token Stat
 pStat =  StatExpr <$> pExpr' <*  sSemi
      <|> StatIf     <$ symbol KeyIf     <*> parenthesised pExpr' <*> pStat <*> optionalElse
