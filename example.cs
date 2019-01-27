@@ -7,15 +7,14 @@ class Hello
         int f;
         f = 3;
         a = 5;
-        print(a, f);
-        int x;
-        x = jemoeder(a);
-        print(x);
+        int d;
+        d = a + f * 5
+
     }
 
-    int jemoeder(int b) {
+    int addition(int input) {
         int i;
-        i = 7 + b;
+        i = 7 + input;
         return i;
     }
 }

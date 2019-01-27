@@ -1,3 +1,8 @@
+{-
+  Authors:
+    Jan Halsema,
+    Quinten Stekelenburg  
+-}
 module CSharpGram where
 
 import ParseLib.Abstract hiding (braced, bracketed, parenthesised)

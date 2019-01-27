@@ -1,3 +1,8 @@
+{-
+  Authors:
+    Jan Halsema,
+    Quinten Stekelenburg  
+-}
 module Main where
 
 import System.Environment
