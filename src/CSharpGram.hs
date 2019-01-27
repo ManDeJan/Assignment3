@@ -43,6 +43,13 @@ parenthesised p = pack (symbol POpen) p (symbol PClose)
 bracketed     p = pack (symbol SOpen) p (symbol SClose)
 braced        p = pack (symbol COpen) p (symbol CClose)
 
+{-
+  Task 2 Operator priority
+  Checks the priorities in order, according to https://en.wikipedia.org/wiki/Order_of_operations.
+
+  Task 4 Left and right associative.
+  The assignment operator (pExprAssignment) is checked in a right associative manner.  
+-} 
 
 pExpr' :: Parser Token Expr
 pExpr' = chainl pExprMultis (ExprOper <$> sOperatorAddis) 
